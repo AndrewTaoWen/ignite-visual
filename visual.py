@@ -1,51 +1,66 @@
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
+import pyvis as pv
+import numpy as np
+from collections import Counter
 
-data = pd.read_excel(r"./data.xlsx")
+#import data
 
-# Set the aesthetic style of the plots
-sns.set(style="whitegrid")
+data_file = "data.xlsx"
+df = pd.read_excel(data_file)
 
-# Data Preparation for Visualizations
-# 1. Platform-Wise Reach
-platforms = ['X (Twitter) Follower #', 'Facebook Follower #', 'Instagram Follower #', 
-             'YouTube Subscriber #', 'TikTok Subscriber #']
-platform_reach = data[platforms].sum()
 
-# 2. Language Distribution
-language_distribution = data['Language'].value_counts()
+df = df.drop('Name (Chinese)', axis=1)
+df = df.drop('Entity owner (Chinese)', axis=1)
+df = df.drop('Parent entity (Chinese)', axis=1)
 
-# 3. Region of Focus Distribution
-region_distribution = data['Region of Focus'].value_counts()
 
-# Creating the Visualizations
-plt.figure(figsize=(18, 6))
+#create plots
 
-# Platform-Wise Reach Bar Graph
-plt.subplot(1, 3, 1)
-sns.barplot(x=platform_reach.index, y=platform_reach.values, palette="viridis")
-plt.title('Social Media Reach by Platform')
-plt.xticks(rotation=45)
-plt.ylabel('Total Followers/Subscribers')
-plt.xlabel('Platform')
+entity_count = df['Entity owner (English)'].value_counts()
+region_count = df['Region of Focus'].value_counts()
 
-# Language Distribution Pie Chart
-plt.subplot(1, 3, 2)
-language_distribution.plot(kind='pie', autopct='%1.1f%%', startangle=140, cmap='Set3')
-plt.title('Language Distribution')
-plt.ylabel('')
+df['Total Prescence'] = df['X (Twitter) Follower #'] + df['Facebook Follower #'] + df['Instagram Follower #'] + df['Threads Follower #'] + df['YouTube Subscriber #'] + df['TikTok Subscriber #']
 
-# Region of Focus Distribution Bar Graph
-plt.subplot(1, 3, 3)
-sns.barplot(x=region_distribution.index, y=region_distribution.values, palette="mako")
-plt.title('Region of Focus Distribution')
-plt.xticks(rotation=45)
-plt.ylabel('Number of Entities')
-plt.xlabel('Region of Focus')
+entity_owner = {}
+for entity in df['Entity owner (English)'].unique():
+    parent = df['Parent entity (English)'].where(df['Entity owner (English)'] == entity).dropna().values[0]
+    entity_owner[entity] = parent
 
-# Adjust layout to prevent overlap
-plt.tight_layout()
+res = dict(sorted(Counter(entity_owner.values()).items(), key=lambda item: item[1]))
 
-# Show the plots
+
+Y1 =entity_count
+
+X2 = res.keys()
+Y2 = res.values()
+
+Y3 = region_count
+
+X4 = df['Name (English)']
+Y4 = df['Total Prescence']
+
+figure, axis = plt.subplots(2, 2)
+
+
+axis[0, 0].bar(Y1.keys(),Y1)
+axis[0, 0].set_title("Entity Owner Count") 
+axis[0, 0].set_xticklabels([]) 
+axis[0,0].set_yscale('log')
+
+axis[0, 1].bar(X2,Y2)
+axis[0, 1].set_title("Parent Entity Count") 
+axis[0, 1].set_xticklabels([]) 
+
+axis[1,0].bar(Y3.keys(),Y3)
+axis[1,0].set_title("Region of Focus Count") 
+axis[1,0].set_xticklabels([]) 
+axis[1,0].set_yscale('log')
+
+axis[1,1].bar(X4,Y4)
+axis[1,1].set_title("Total Prescence Count") 
+axis[1,1].set_xticklabels([]) 
+axis[1,1].set_yscale('log')
 plt.show()
+
+
