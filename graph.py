@@ -5,6 +5,8 @@ import json  # Import the json module
 # Read the Excel file
 df = pd.read_excel("data.xlsx", sheet_name=0)
 
+arr = df["Region of Focus"]
+
 # Convert DataFrame to NumPy array (if needed)
 data = df.to_numpy()
 
@@ -37,4 +39,5 @@ for i in range(NUM_ROWS):
 
 with open("output.json", "w") as json_file:
     json.dump(json_dict, json_file, indent=4)
+
 
